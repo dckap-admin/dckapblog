@@ -8,33 +8,18 @@
 
 
 <?xml version="1.0"?>
-
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Api/etc/extension_attributes.xsd">
-	<extension_attributes for="Magento\Quote\Api\Data\AddressInterface">
-        	 	<attribute code="sample_attribute" type="string" />
-	</extension_attributes>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
+    <module name="Dckap_ExtensionAttributes" setup_version="1.0.0" />
 </config>
 
 
+<?php
 
-<input type="text" name="freight_collect_account_number" id="freight_collect_account_number" data-bind="value: sample_attribute, valueUpdate: 'afterkeydown', event: { 'keyup': check }">
-
-
-initialize: function (config) {
-this.sample_attribute = ko.observable();
-}
-
-
-setShippingInformation: function () {
-        	var sample_attribute_value = $("#freight_collect_account_number").val();
-        	if (quote.shippingAddress().extensionAttributes == undefined) {
-            	quote.shippingAddress().extensionAttributes = {};
-        	}
-		quote.shippingAddress().extensionAttributes.sample_attribute=sample_attribute_value;
-};
-
-
-
+\Magento\Framework\Component\ComponentRegistrar::register(
+    \Magento\Framework\Component\ComponentRegistrar::MODULE,
+    Dckap_ExtensionAttributes,
+    __DIR__
+);
 
 
 <?php
@@ -54,42 +39,70 @@ class InstallSchema implements InstallSchemaInterface
  */
 public function install(SchemaSetupInterface $setup, ModuleContextInterface $context)
   {
-	$installer = $setup;
+    $installer = $setup;
 
-	$installer->startSetup();
+    $installer->startSetup();
 
-	/* While module install, creates columns in quote_address and sales_order_address table */
+    /* While module install, creates columns in quote_address and sales_order_address table */
 
-	$eavTable1 = $installer->getTable('quote_address');
-	$eavTable2 = $installer->getTable('sales_order_address');
+    $eavTable1 = $installer->getTable('quote_address');
+    $eavTable2 = $installer->getTable('sales_order_address');
 
-	$columns = [
-    	'sample_attribute' => [
-        	'type' => \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
-        	'nullable' => false,
-        	'comment' => 'freightcollect',
-    	]	
-	];
+    $columns = [
+        'sample_attribute' => [
+            'type' => \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+            'nullable' => false,
+            'comment' => 'freightcollect',
+        ]    
+    ];
 
-	$connection = $installer->getConnection();
-	foreach ($columns as $name => $definition) {
-    	$connection->addColumn($eavTable1, $name, $definition);
-    	$connection->addColumn($eavTable2, $name, $definition);
-	}
+    $connection = $installer->getConnection();
+    foreach ($columns as $name => $definition) {
+        $connection->addColumn($eavTable1, $name, $definition);
+        $connection->addColumn($eavTable2, $name, $definition);
+    }
 
-	$installer->endSetup();
+    $installer->endSetup();
 }
 }
 
 
-
-
-	<?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-	<type name="Magento\Quote\Model\Quote\Address">
-   	 <plugin name="add_freight_collect_information" type="Vendor\ModuleName\Plugin\Quote\FreightCollect" sortOrder="10" disabled="false"/>
-	</type>
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Api/etc/extension_attributes.xsd">
+    <extension_attributes for="Magento\Quote\Api\Data\AddressInterface">
+                 <attribute code="sample_attribute" type="string" />
+    </extension_attributes>
 </config>
+
+
+<input type="text" name="freight_collect_account_number" id="freight_collect_account_number" data-bind="value: sample_attribute, valueUpdate: 'afterkeydown', event: { 'keyup': check }">
+
+
+
+initialize: function (config) {
+this.sample_attribute = ko.observable();
+}
+
+
+
+
+setShippingInformation: function () {
+            var sample_attribute_value = $("#freight_collect_account_number").val();
+            if (quote.shippingAddress().extensionAttributes == undefined) {
+                quote.shippingAddress().extensionAttributes = {};
+            }
+        quote.shippingAddress().extensionAttributes.sample_attribute=sample_attribute_value;
+};
+
+
+<?xml version="1.0"?>
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Quote\Model\Quote\Address">
+        <plugin name="add_freight_collect_information" type="Vendor\ModuleName\Plugin\Quote\FreightCollect" sortOrder="10" disabled="false"/>
+    </type>
+</config>
+
 
 
 <?php
@@ -102,34 +115,33 @@ use Magento\Quote\Api\Data\ShippingMethodExtensionFactory;
 
 class FreightCollect
 {
- 	/**
- 	* Hook into setShippingMethod.
- 	* As this is magic function processed by __call method we need to hook around __call
- 	* to get the name of the called method. after__call does not provide this information.
- 	*
- 	* @param Address $subject
- 	* @param callable $proceed
- 	* @param string $method
- 	* @param mixed $vars
- 	* @return Address
- 	*/
- 	public function around__call($subject, $proceed, $method, $vars)
- 	{
-    	$result = $proceed($method, $vars);
-    	        	if($subject->getExtensionAttributes()){               		      $subject->setSampleAttribute($subject->getExtensionAttributes()->getSampleAttribute());
-           	    	}
-    	    	return $result;
-	}
+     /**
+     * Hook into setShippingMethod.
+     * As this is magic function processed by __call method we need to hook around __call
+     * to get the name of the called method. after__call does not provide this information.
+     *
+     * @param Address $subject
+     * @param callable $proceed
+     * @param string $method
+     * @param mixed $vars
+     * @return Address
+     */
+     public function around__call($subject, $proceed, $method, $vars)
+     {
+        $result = $proceed($method, $vars);
+                    if($subject->getExtensionAttributes()){$subject->setSampleAttribute($subject->getExtensionAttributes()->getSampleAttribute());
+                       }
+                return $result;
+    }
 }
-
 
 
 
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
-	<event name="sales_model_service_quote_submit_before">
-    	<observer name="ModuleName_sales_address_save" instance="Vendor\ModuleName\Observer\Observeorder" />
-	</event>
+    <event name="sales_model_service_quote_submit_before">
+        <observer name="ModuleName_sales_address_save" instance="Vendor\ModuleName\Observer\Observeorder" />
+    </event>
 </config>
 
 
@@ -144,14 +156,18 @@ class Observeorder implements \Magento\Framework\Event\ObserverInterface
     {
 
     /* before quote submit save the freight list values in sales_order_address table
-    */   	 
-   	 $order = $observer->getEvent()->getOrder();
-   	 $quote = $observer->getEvent()->getQuote();
-   	  $order->getShippingAddress()->setSampleAttribute($quote->getShippingAddress()->getSampleAttribute());
-   	 
+    */        
+        $order = $observer->getEvent()->getOrder();
+        $quote = $observer->getEvent()->getQuote();
+         $order->getShippingAddress()->setSampleAttribute($quote->getShippingAddress()->getSampleAttribute());
+        
 
-   	 return $this;
+        return $this;
     }
 }
+
+
+
+
 
 
